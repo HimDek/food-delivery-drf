@@ -11,4 +11,7 @@ SECRET_KEY = os.getenv('PRODUCTION_SECRET_KEY')
 DEBUG = False
 
 
+INSTALLED_APPS = INSTALLED_APPS.remove('django.contrib.admin')
+
+
 TEMPLATES = []
