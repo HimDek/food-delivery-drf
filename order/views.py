@@ -1,8 +1,8 @@
+import requests
 from django.db.models import Q
-from django.contrib.auth.models import User
 from rest_framework import generics, views, filters
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 from .models import *
 from .serializers import *
 from .permissions import *
