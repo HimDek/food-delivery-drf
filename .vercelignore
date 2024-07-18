@@ -1,8 +1,6 @@
 
 .gitignore
 .vercelignore
-vercel.json
-requirements.txt
 manage.py
 order
 restaurant
