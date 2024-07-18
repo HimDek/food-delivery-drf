@@ -231,7 +231,7 @@ class CreateOrder(views.APIView):
             customer=profile,
             deliveryMan=deliveryMan,
         )
-        data = {"open": "order", "id": order.id}
+        data = {"open": "order", "id": f"{order.id}"}
 
         Notification.objects.create(
             profile=profile,
@@ -260,7 +260,7 @@ class CancelOrder(views.APIView):
 
     def post(self, request):
         order = Order.objects.get(pk=request.POST.get("id"))
-        data = {"open": "order", "id": order.id}
+        data = {"open": "order", "id": f"{order.id}"}
         profile = request.user.profile
         if profile == order.customer and order.status == "PL":
             order.status = "XC"
@@ -320,7 +320,7 @@ class AcceptOrder(views.APIView):
 
     def post(self, request):
         order = Order.objects.get(pk=request.POST.get("id"))
-        data = {"open": "order", "id": order.id}
+        data = {"open": "order", "id": f"{order.id}"}
         if order.status == "PL":
             order.status = "CK"
             order.save()
@@ -345,7 +345,7 @@ class OrderCookingFinished(views.APIView):
 
     def post(self, request):
         order = Order.objects.get(pk=request.POST.get("id"))
-        data = {"open": "order", "id": order.id}
+        data = {"open": "order", "id": f"{order.id}"}
         if order.status == "CK":
             order.status = "WT"
             order.save()
@@ -365,7 +365,7 @@ class OrderPickedUp(views.APIView):
 
     def post(self, request):
         order = Order.objects.get(pk=request.POST.get("id"))
-        data = {"open": "order", "id": order.id}
+        data = {"open": "order", "id": f"{order.id}"}
         if order.status == "WT":
             order.status = "PU"
             order.save()
@@ -385,7 +385,7 @@ class OrderArrived(views.APIView):
 
     def post(self, request):
         order = Order.objects.get(pk=request.POST.get("id"))
-        data = {"open": "order", "id": order.id}
+        data = {"open": "order", "id": f"{order.id}"}
         if order.status == "PU":
             order.status = "AR"
             order.save()
@@ -405,7 +405,7 @@ class OrderDelivered(views.APIView):
 
     def post(self, request):
         order = Order.objects.get(pk=request.POST.get("id"))
-        data = {"open": "order", "id": order.id}
+        data = {"open": "order", "id": f"{order.id}"}
         if order.status == "AR":
             order.status = "DL"
             order.paymentStatus = "RC"
