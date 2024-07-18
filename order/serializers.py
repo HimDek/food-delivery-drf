@@ -7,7 +7,7 @@ class OrderSerializer(serializers.ModelSerializer):
     entries = serializers.SerializerMethodField()
     customer = ProfileSerializer()
     restaurant = ProfileSerializer()
-    delivryMan = ProfileSerializer()
+    deliveryMan = ProfileSerializer()
 
     def get_entries(self, obj):
         content = json.loads(obj.content)
