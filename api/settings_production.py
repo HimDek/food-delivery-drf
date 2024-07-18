@@ -13,6 +13,13 @@ DEBUG = False
 
 INSTALLED_APPS.remove('django.contrib.admin')
 
-TEMPLATES = []
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True
+    },
+]
+
 
 ROOT_URLCONF = 'api.urls_production'
