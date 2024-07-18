@@ -1,13 +1,7 @@
 import json
 from rest_framework import serializers
-from django.contrib.auth.models import User
-from random import randint
-from .models import *
-from restaurant.models import Product, Variant
-from user.models import Profile
+from .models import Order
 from user.serializers import ProfileSerializer
-import requests
-import math
 
 class OrderSerializer(serializers.ModelSerializer):
     entries = serializers.SerializerMethodField()

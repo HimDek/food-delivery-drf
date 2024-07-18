@@ -1,5 +1,4 @@
 from django.db import models
-from django.core.files import File
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta, timezone
 from math import cos, pi, radians, sin, sqrt, atan2

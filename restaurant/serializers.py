@@ -1,8 +1,5 @@
-import json
 from rest_framework import serializers
-from django.contrib.auth.models import User
-from random import randint
-from .models import *
+from .models import Product
 from user.serializers import ProfileSerializer
 
 class ProductSerializer(serializers.ModelSerializer):

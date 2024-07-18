@@ -1,6 +1,5 @@
 from django.db import models
 from user.models import Profile
-from django.contrib import admin
 from cloudinary.models import CloudinaryField
 
 def public_id(instance):
@@ -35,13 +34,3 @@ class Variant(models.Model):
     
     def __str__(self):
         return self.variant()
-
-class VariantInlineAdmin(admin.TabularInline):
-    model = Variant
-    min_num = 1
-    extra = 0
-
-class ProductAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'nonveg', 'restaurant']
-    list_filter = ['restaurant', 'category', 'nonveg']
-    inlines = [VariantInlineAdmin]

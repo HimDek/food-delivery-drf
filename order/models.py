@@ -1,12 +1,7 @@
 from django.db import models
 from restaurant.models import Product
 from user.models import Profile
-from asgiref.sync import async_to_sync
-from google.oauth2 import service_account
-import google.auth.transport.requests
-import firebase_admin
-from firebase_admin import credentials, messaging
-import json
+from firebase_admin import credentials, messaging, initialize_app
 import asyncio
 import os
 
@@ -25,7 +20,7 @@ cred = credentials.Certificate(
         "universe_domain": os.getenv('FIREBASE_UNIVERSE_DOMAIN')
     }
 )
-firebase_admin.initialize_app(cred)
+initialize_app(cred)
 
 
 # Create your models here.

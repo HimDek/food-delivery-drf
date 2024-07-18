@@ -1,6 +1,5 @@
 from rest_framework import generics, views
 from rest_framework.response import Response
-from rest_framework.response import Response
 from django.db.models import F, Func, FloatField
 from django.db.models.functions import Coalesce
 from django.contrib.auth.models import User

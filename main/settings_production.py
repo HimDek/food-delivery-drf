@@ -10,8 +10,4 @@ SECRET_KEY = os.getenv('PRODUCTION_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-
-INSTALLED_APPS = INSTALLED_APPS.remove('django.contrib.admin')
-
-
 TEMPLATES = []
