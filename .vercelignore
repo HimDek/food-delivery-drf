@@ -2,13 +2,5 @@
 .gitignore
 .vercelignore
 manage.py
-order
-restaurant
-user
-api/__init__.py
-api/asgi.py
-api/settings*
-api/urls*
-
 .env
 .vscode
