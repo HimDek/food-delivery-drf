@@ -21,6 +21,6 @@ class OrderSerializer(serializers.ModelSerializer):
         return entries
 
     class Meta:
-        depth = 2
+        depth = 3
         model = Order
         fields = '__all__'
