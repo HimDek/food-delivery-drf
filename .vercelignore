@@ -1,0 +1,16 @@
+
+.gitignore
+.vercelignore
+vercel.json
+requirements.txt
+manage.py
+order
+restaurant
+user
+api/__init__.py
+api/asgi.py
+api/settings*
+api/urls*
+
+.env
+.vscode
