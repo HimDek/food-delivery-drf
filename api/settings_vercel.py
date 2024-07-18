@@ -11,4 +11,4 @@ INSTALLED_APPS.remove('django.contrib.admin')
 INSTALLED_APPS.remove('django.contrib.messages')
 INSTALLED_APPS.remove('django.contrib.staticfiles')
 
-ROOT_URLCONF = 'main.urls_vercel'
+ROOT_URLCONF = 'api.urls_vercel'
