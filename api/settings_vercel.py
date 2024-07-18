@@ -5,7 +5,7 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-ALLOWED_HOSTS = [".vercel.app", "now.sh"]
+ALLOWED_HOSTS = [".vercel.app", "now.sh". ".barakbits.com"]
 
 INSTALLED_APPS.remove('django.contrib.admin')
 INSTALLED_APPS.remove('django.contrib.messages')
