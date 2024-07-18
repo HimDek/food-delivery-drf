@@ -1,4 +1,5 @@
 from pathlib import Path
+from .settings_base import INSTALLED_APPS
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -10,4 +11,8 @@ SECRET_KEY = os.getenv('PRODUCTION_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+INSTALLED_APPS.remove('django.contrib.admin')
+
 TEMPLATES = []
+
+ROOT_URLCONF = 'api.urls_production'
