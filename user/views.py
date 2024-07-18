@@ -1,4 +1,6 @@
 # from django.shortcuts import render
+import requests
+import os
 from rest_framework import generics, views
 from rest_framework.response import Response
 from django.contrib.auth.models import User
@@ -6,6 +8,8 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from .models import *
 from .serializers import *
 from .permissions import *
+
+
 
 # Create your views here.
 
@@ -98,4 +102,6 @@ class GetOTP(views.APIView):
             user.save()
 
         print({phone.number: phone.otp})
+        url = f"https://2factor.in/API/V1/{os.getenv('2FACTOR_API_KEY')}/SMS/{phone.number}/{phone.otp}/OTP1"
+        response = requests.get(url).json()
         return Response(PhoneSerializer(phone).data)

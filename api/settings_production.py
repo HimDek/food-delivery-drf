@@ -1,6 +1,5 @@
-from pathlib import Path
-from .settings_base import INSTALLED_APPS
 import os
+from .settings_base import INSTALLED_APPS
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('PRODUCTION_SECRET_KEY')
