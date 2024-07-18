@@ -20,7 +20,7 @@ class Profile(models.Model):
 
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='profile')
-    restaurantName = models.CharField(max_length=32, unique=True, blank=True)
+    restaurantName = models.CharField(max_length=32, blank=True)
     joinedOn = models.DateField(auto_now_add=True)
     lastActiveOn = models.DateTimeField(auto_now=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
