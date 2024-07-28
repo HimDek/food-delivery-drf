@@ -4,7 +4,7 @@ from random import randint
 from .models import *
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class ProfileBaseSerializer(serializers.ModelSerializer):
     image = serializers.FileField(use_url=True)
 
     class Meta:
@@ -14,7 +14,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()
+    profile = ProfileBaseSerializer()
 
     class Meta:
         depth = 1
@@ -22,6 +22,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'last_login', 'profile', 'username', 'first_name',
                   'last_name', 'date_joined']
 
+
+class ProfileSerializer(ProfileBaseSerializer):
+    user = UserSerializer()
 
 class PhoneSerializer(serializers.ModelSerializer):
     class Meta:
