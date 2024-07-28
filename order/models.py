@@ -111,7 +111,4 @@ class Notification(models.Model):
             asyncio.run(self.sendMessage(message, *args, **kwargs))
 
     async def sendMessage(self, message, *args, **kwargs):
-        try:
-            messaging.send(message)
-        except:
-            super(Notification, self).save(*args, **kwargs)
+        messaging.send(message)
