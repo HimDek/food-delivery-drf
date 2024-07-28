@@ -9,3 +9,6 @@ if os.getenv('PREVIEW_SECRET_KEY'):
 
 if os.getenv('VERCEL'):
     from .settings_vercel import *
+
+if os.getenv('EMAIL_HOST'):
+    from .settings_email import *

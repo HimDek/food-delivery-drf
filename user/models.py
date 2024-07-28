@@ -20,6 +20,7 @@ class Profile(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    verified = models.BooleanField(default=False)
     restaurantName = models.CharField(max_length=32, blank=True)
     joinedOn = models.DateField(auto_now_add=True)
     lastActiveOn = models.DateTimeField(auto_now=True)
@@ -70,6 +71,19 @@ class Profile(models.Model):
 
 class Phone(models.Model):
     number = models.CharField(max_length=10, null=False, unique=True)
+    otp = models.PositiveIntegerField(null=True)
+    updatedOn = models.DateTimeField(auto_now=True)
+
+    def valid(self):
+        return (
+            True
+            if (datetime.now(timezone.utc) - self.updatedOn).seconds / 60 < 5
+            else False
+        )
+
+
+class Email(models.Model):
+    email = models.EmailField(null=False, unique=True)
     otp = models.PositiveIntegerField(null=True)
     updatedOn = models.DateTimeField(auto_now=True)
 

@@ -4,10 +4,17 @@ from random import randint
 from rest_framework import views
 from rest_framework.response import Response
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
+from django.template.loader import render_to_string
 from rest_framework.permissions import IsAuthenticated
-from .models import Profile, Phone
-from .serializers import UserSerializer, ProfileSerializer, PhoneSerializer
-
+from .models import Profile, Phone, Email
+from .serializers import (
+    UserSerializer,
+    ProfileSerializer,
+    PhoneSerializer,
+    EmailSerializer,
+)
 
 # Create your views here.
 
@@ -83,6 +90,15 @@ class RetrieveUpdateSelfUserProfile(views.APIView):
             profile.upiID = request.POST.get("upiID")
         if request.FILES.get("image"):
             profile.image = request.FILES.get("image")
+        if request.POST.get("phone") and request.POST.get("otp"):
+            phone = Phone.objects.get(phone=request.POST.get("phone"))
+            if request.POST.get("otp") == phone.otp and phone.valid():
+                user.username = request.POST.get("phone")
+                profile.verified = True
+        if request.POST.get("email") and request.POST.get("emailotp"):
+            email = Phone.objects.get(email=request.POST.get("email"))
+            if request.POST.get("emailotp") == email.otp and email.valid():
+                user.email = request.POST.get("email")
 
         profile.save()
         user.save()
@@ -98,12 +114,42 @@ class GetOTP(views.APIView):
                 "otp": randint(100000, 999999),
             },
         )
-        if User.objects.filter(username=phone.number).exists():
-            user = User.objects.get(username=phone.number)
-            user.set_password("{}".format(phone.otp))
-            user.save()
 
         print({phone.number: phone.otp})
         url = f"https://2factor.in/API/V1/{os.getenv('TWO_FACTOR_API_KEY')}/SMS/{phone.number}/{phone.otp}/OTP1"
-        requests.get(url).json()
-        return Response(PhoneSerializer(phone).data)
+        response = requests.get(url).json()
+        return Response(PhoneSerializer(phone).data, status=response.status_code)
+
+
+class GetEmailOTP(views.APIView):
+    def post(self, request):
+        email, created = Email.objects.update_or_create(
+            email=request.POST.get("email"),
+            defaults={
+                "email": request.POST.get("email"),
+                "otp": randint(100000, 999999),
+            },
+        )
+        if User.objects.filter(email=email.email).exists():
+            user = User.objects.get(email=email.email)
+            user.set_password("{}".format(email.otp))
+            user.save()
+
+        print({email.email: email.otp})
+        html_message = render_to_string(
+            "email_otp.html",
+            {
+                "otp": email.otp
+            },
+        )
+        sent = send_mail(
+            subject="Email OTP for Maaco",
+            message=strip_tags(html_message),
+            from_email=None,
+            recipient_list=[email.email],
+            html_message=html_message,
+        )
+        if sent:
+            return Response(EmailSerializer(email).data)
+        else:
+            return Response(EmailSerializer(email).data, status=503)

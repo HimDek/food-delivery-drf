@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Profile, Phone
+from .models import Profile, Phone, Email
 
 
 class ProfileBaseSerializer(serializers.ModelSerializer):
@@ -37,3 +37,9 @@ class PhoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Phone
         fields = ["number"]
+
+
+class EmailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Email
+        fields = ["email"]
