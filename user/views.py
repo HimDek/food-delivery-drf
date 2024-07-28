@@ -1,14 +1,12 @@
-# from django.shortcuts import render
-import requests
 import os
-from rest_framework import generics, views
+import requests
+from random import randint
+from rest_framework import views
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from .models import *
-from .serializers import *
-from .permissions import *
-
+from rest_framework.permissions import IsAuthenticated
+from .models import Profile, Phone
+from .serializers import UserSerializer, ProfileSerializer, PhoneSerializer
 
 
 # Create your views here.
@@ -16,33 +14,34 @@ from .permissions import *
 
 class CreateUsers(views.APIView):
     def post(self, request):
-        if not request.POST.get('phone'):
-            error = {'detail': 'Phone number is required'}
+        if not request.POST.get("phone"):
+            error = {"detail": "Phone number is required"}
             return Response(error, status=400)
-        elif not request.POST.get('otp'):
-            error = {'detail': 'Phone OTP is required'}
+        elif not request.POST.get("otp"):
+            error = {"detail": "Phone OTP is required"}
             return Response(error, status=400)
-        elif not request.POST.get('first_name'):
-            error = {'detail': 'First name is required'}
+        elif not request.POST.get("first_name"):
+            error = {"detail": "First name is required"}
             return Response(error, status=400)
-        elif not Phone.objects.filter(number=request.POST.get('phone')).exists():
-            error = {'detail': 'Invalid phone OTP'}
+        elif not Phone.objects.filter(number=request.POST.get("phone")).exists():
+            error = {"detail": "Invalid phone OTP"}
             return Response(error, status=400)
-        elif User.objects.filter(username=request.POST.get('phone')).exists():
-            error = {'detail': 'Account with that phone number already exist'}
+        elif User.objects.filter(username=request.POST.get("phone")).exists():
+            error = {"detail": "Account with that phone number already exist"}
             return Response(error, status=400)
         else:
-            phone = Phone.objects.get(
-                number=request.POST.get('phone'))
-            if not phone.valid() or '{}'.format(phone.otp) != request.POST.get('otp'):
-                error = {'detail': 'Invalid phone OTP'}
+            phone = Phone.objects.get(number=request.POST.get("phone"))
+            if not phone.valid() or "{}".format(phone.otp) != request.POST.get("otp"):
+                error = {"detail": "Invalid phone OTP"}
                 return Response(error, status=400)
             else:
-                user = User.objects.create(username=request.POST.get('phone'), first_name=request.POST.get(
-                    'first_name'), last_name=request.POST.get('last_name'))
-                profile = Profile.objects.create(
-                    user=user)
-                user.set_password(request.POST.get('otp'))
+                user = User.objects.create(
+                    username=request.POST.get("phone"),
+                    first_name=request.POST.get("first_name"),
+                    last_name=request.POST.get("last_name"),
+                )
+                profile = Profile.objects.create(user=user)
+                user.set_password(request.POST.get("otp"))
                 user.save()
                 profile.save()
 
@@ -65,24 +64,25 @@ class RetrieveUpdateSelfUserProfile(views.APIView):
     def patch(self, request):
         profile = request.user.profile
         user = request.user
-        if request.POST.get('restaurantname'):
-            profile.restaurantName = request.POST.get('restaurantname')
-        if request.POST.get('first_name'):
-            user.first_name = request.POST.get('first_name')
-        if request.POST.get('last_name'):
-            user.last_name = request.POST.get('last_name')
-        if request.POST.get('available'):
-            profile.available = True if request.POST.get(
-                'available') == 'true' else False
-        if request.POST.get('fcmtoken'):
-            for obj in Profile.objects.filter(fcmtoken=request.POST.get('fcmtoken')):
+        if request.POST.get("restaurantname"):
+            profile.restaurantName = request.POST.get("restaurantname")
+        if request.POST.get("first_name"):
+            user.first_name = request.POST.get("first_name")
+        if request.POST.get("last_name"):
+            user.last_name = request.POST.get("last_name")
+        if request.POST.get("available"):
+            profile.available = (
+                True if request.POST.get("available") == "true" else False
+            )
+        if request.POST.get("fcmtoken"):
+            for obj in Profile.objects.filter(fcmtoken=request.POST.get("fcmtoken")):
                 obj.fcmtoken = None
                 obj.save()
-            profile.fcmtoken = request.POST.get('fcmtoken')
-        if request.POST.get('upiID'):
-            profile.upiID = request.POST.get('upiID')
-        if request.FILES.get('image'):
-            profile.image = request.FILES.get('image')
+            profile.fcmtoken = request.POST.get("fcmtoken")
+        if request.POST.get("upiID"):
+            profile.upiID = request.POST.get("upiID")
+        if request.FILES.get("image"):
+            profile.image = request.FILES.get("image")
 
         profile.save()
         user.save()
@@ -92,16 +92,18 @@ class RetrieveUpdateSelfUserProfile(views.APIView):
 class GetOTP(views.APIView):
     def post(self, request):
         phone, created = Phone.objects.update_or_create(
-            number=request.POST.get('number'),
-            defaults={'number': request.POST.get(
-                'number'), 'otp': randint(100000, 999999)}
+            number=request.POST.get("number"),
+            defaults={
+                "number": request.POST.get("number"),
+                "otp": randint(100000, 999999),
+            },
         )
         if User.objects.filter(username=phone.number).exists():
             user = User.objects.get(username=phone.number)
-            user.set_password('{}'.format(phone.otp))
+            user.set_password("{}".format(phone.otp))
             user.save()
 
         print({phone.number: phone.otp})
         url = f"https://2factor.in/API/V1/{os.getenv('TWO_FACTOR_API_KEY')}/SMS/{phone.number}/{phone.otp}/OTP1"
-        response = requests.get(url).json()
+        requests.get(url).json()
         return Response(PhoneSerializer(phone).data)

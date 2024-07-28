@@ -1,3 +1,4 @@
+import os
 from .settings_base import *
 
 if os.getenv('PRODUCTION_SECRET_KEY'):

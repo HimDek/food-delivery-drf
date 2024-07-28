@@ -1,15 +1,16 @@
-import requests
 import math
+import json
+import requests
 from django.db.models import Q
 from rest_framework import generics, views, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import *
-from .serializers import *
-from .permissions import *
 from user.models import Profile
-from user.serializers import *
+from user.serializers import ProfileSerializer
 from restaurant.models import Product, Variant
+from .models import Notification, Order
+from .serializers import OrderSerializer
+from .permissions import IsDeliveryManUser, IsCustomerUser, IsRestaurantUser
 
 
 def getDeliveryMan(restaurantId):
@@ -175,7 +176,7 @@ class CreateOrder(views.APIView):
 
         if travelDistanceDuration[0] > 20:
             error = {
-                "detail": f"This restaurant is currently not delivering to the specified location"
+                "detail": "This restaurant is currently not delivering to the specified location"
             }
             return Response(error, status=400)
 
@@ -213,12 +214,12 @@ class CreateOrder(views.APIView):
                     if len(content[-1]["variants"]) == 0:
                         content.pop()
                 else:
-                    error = {"detail": f"Products from different restaurant"}
+                    error = {"detail": "Products from different restaurant"}
                     return Response(error, status=400)
 
         deliveryMan = getDeliveryMan(restaurant.id)
-        if deliveryMan == None:
-            error = {"detail": f"No delivery Partner Available"}
+        if deliveryMan is None:
+            error = {"detail": "No delivery Partner Available"}
             return Response(error, status=400)
 
         order = Order.objects.create(
@@ -247,8 +248,8 @@ class CreateOrder(views.APIView):
         )
         Notification.objects.create(
             profile=deliveryMan,
-            title=f"Delivery of Order #{self.id} Assigned",
-            body=f"Delivery of order from {self.restaurant.restaurantName} to {self.customer.user.first_name} {self.customer.user.last_name} was assigned to you",
+            title=f"Delivery of Order #{order.id} Assigned",
+            body=f"Delivery of order from {order.restaurant.restaurantName} to {order.customer.user.first_name} {order.customer.user.last_name} was assigned to you",
             data=data,
         )
 
@@ -267,15 +268,15 @@ class CancelOrder(views.APIView):
             order.cancelledReason = request.POST.get("reason")
             order.save()
             Notification.objects.create(
-                profile=self.restaurant,
-                title=f"Order #{self.id} Cancelled",
-                body=f"{self.customer.user.first_name} {self.customer.user.last_name} cancelled their order",
+                profile=order.restaurant,
+                title=f"Order #{order.id} Cancelled",
+                body=f"{order.customer.user.first_name} {order.customer.user.last_name} cancelled their order",
                 data=data,
             )
             Notification.objects.create(
-                profile=self.deliveryMan,
-                title=f"Order #{self.id} Cancelled",
-                body=f"{self.customer.user.first_name} {self.customer.user.last_name} cancelled their order from {self.restaurant.restaurantName}",
+                profile=order.deliveryMan,
+                title=f"Order #{order.id} Cancelled",
+                body=f"{order.customer.user.first_name} {order.customer.user.last_name} cancelled their order from {order.restaurant.restaurantName}",
                 data=data,
             )
         elif profile == order.restaurant and order.status in ["PL", "CK", "WT"]:
@@ -283,15 +284,15 @@ class CancelOrder(views.APIView):
             order.cancelledReason = request.POST.get("reason")
             order.save()
             Notification.objects.create(
-                profile=self.customer,
-                title=f"Order #{self.id} Cancelled",
-                body=f"Your Order from {self.restaurant.restaurantName} was cancelled by the restaurant",
+                profile=order.customer,
+                title=f"Order #{order.id} Cancelled",
+                body=f"Your Order from {order.restaurant.restaurantName} was cancelled by the restaurant",
                 data=data,
             )
             Notification.objects.create(
-                profile=self.deliveryMan,
-                title=f"Order #{self.id} Cancelled",
-                body=f"Order #{self.id} from {self.restaurant.restaurantName} to {self.customer.user.first_name} {self.customer.user.last_name} was cancelled by the restaurant",
+                profile=order.deliveryMan,
+                title=f"Order #{order.id} Cancelled",
+                body=f"Order #{order.id} from {order.restaurant.restaurantName} to {order.customer.user.first_name} {order.customer.user.last_name} was cancelled by the restaurant",
                 data=data,
             )
         elif profile == order.deliveryMan and order.status in ["PL", "PU", "AR"]:
@@ -299,15 +300,15 @@ class CancelOrder(views.APIView):
             order.cancelledReason = request.POST.get("reason")
             order.save()
             Notification.objects.create(
-                profile=self.customer,
-                title=f"Order #{self.id} Cancelled",
-                body=f"Your Order from {self.restaurant.restaurantName} was cancelled by the delivery partner",
+                profile=order.customer,
+                title=f"Order #{order.id} Cancelled",
+                body=f"Your Order from {order.restaurant.restaurantName} was cancelled by the delivery partner",
                 data=data,
             )
             Notification.objects.create(
-                profile=self.restaurant,
-                title=f"Order #{self.id} Cancelled",
-                body=f"Order from {self.customer.user.first_name} {self.customer.user.last_name} was cancelled by the delivery partner",
+                profile=order.restaurant,
+                title=f"Order #{order.id} Cancelled",
+                body=f"Order from {order.customer.user.first_name} {order.customer.user.last_name} was cancelled by the delivery partner",
                 data=data,
             )
         else:
@@ -325,14 +326,14 @@ class AcceptOrder(views.APIView):
             order.status = "CK"
             order.save()
             Notification.objects.create(
-                profile=self.customer,
-                title=f"Order #{self.id} Accepted",
+                profile=order.customer,
+                title=f"Order #{order.id} Accepted",
                 body="Your Order was accepted by the restaurant",
             )
             Notification.objects.create(
-                profile=self.deliveryMan,
-                title=f"Order #{self.id} Accepted",
-                body=f"Order from {self.restaurant.restaurantName} to {self.customer.user.first_name} {self.customer.user.last_name} that was assigned to you was accepted by the restaurant",
+                profile=order.deliveryMan,
+                title=f"Order #{order.id} Accepted",
+                body=f"Order from {order.restaurant.restaurantName} to {order.customer.user.first_name} {order.customer.user.last_name} that was assigned to you was accepted by the restaurant",
                 data=data,
             )
         else:
@@ -350,9 +351,9 @@ class OrderCookingFinished(views.APIView):
             order.status = "WT"
             order.save()
             Notification.objects.create(
-                profile=self.deliveryMan,
-                title=f"Order #{self.id} Waiting for Pickup",
-                body=f"Order from {self.restaurant.restaurantName} to {self.customer.user.first_name} {self.customer.user.last_name} is waiting to be picked up by you",
+                profile=order.deliveryMan,
+                title=f"Order #{order.id} Waiting for Pickup",
+                body=f"Order from {order.restaurant.restaurantName} to {order.customer.user.first_name} {order.customer.user.last_name} is waiting to be picked up by you",
                 data=data,
             )
         else:
@@ -370,9 +371,9 @@ class OrderPickedUp(views.APIView):
             order.status = "PU"
             order.save()
             Notification.objects.create(
-                profile=self.customer,
-                title=f"Order #{self.id} Picked Up",
-                body=f"Your Order from {self.restaurant.restaurantName} was picked up by {self.deliveryMan.user.first_name} {self.deliveryMan.user.last_name}",
+                profile=order.customer,
+                title=f"Order #{order.id} Picked Up",
+                body=f"Your Order from {order.restaurant.restaurantName} was picked up by {order.deliveryMan.user.first_name} {order.deliveryMan.user.last_name}",
                 data=data,
             )
         else:
@@ -390,9 +391,9 @@ class OrderArrived(views.APIView):
             order.status = "AR"
             order.save()
             Notification.objects.create(
-                profile=self.customer,
-                title=f"Order #{self.id} Arrived",
-                body=f"{self.deliveryMan.user.first_name} {self.deliveryMan.user.last_name} arrived with your order from {self.restaurant.restaurantName}",
+                profile=order.customer,
+                title=f"Order #{order.id} Arrived",
+                body=f"{order.deliveryMan.user.first_name} {order.deliveryMan.user.last_name} arrived with your order from {order.restaurant.restaurantName}",
                 data=data,
             )
         else:
@@ -411,9 +412,9 @@ class OrderDelivered(views.APIView):
             order.paymentStatus = "RC"
             order.save()
             Notification.objects.create(
-                profile=self.customer,
-                title=f"Order #{self.id} Delivered",
-                body=f"Your Order from {self.restaurant.restaurantName} was delivered",
+                profile=order.customer,
+                title=f"Order #{order.id} Delivered",
+                body=f"Your Order from {order.restaurant.restaurantName} was delivered",
                 data=data,
             )
         else:

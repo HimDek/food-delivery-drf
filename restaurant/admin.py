@@ -9,8 +9,8 @@ try:
         extra = 0
 
     class ProductAdmin(admin.ModelAdmin):
-        list_display = ['__str__', 'nonveg', 'restaurant']
-        list_filter = ['restaurant', 'category', 'nonveg']
+        list_display = ["__str__", "nonveg", "restaurant"]
+        list_filter = ["restaurant", "category", "nonveg"]
         inlines = [VariantInlineAdmin]
 
     # Register your models here.

@@ -1,9 +1,8 @@
-from django.db import models
-from restaurant.models import Product
-from user.models import Profile
-from firebase_admin import credentials, messaging, initialize_app
-import asyncio
 import os
+import asyncio
+from django.db import models
+from firebase_admin import credentials, messaging, initialize_app
+from user.models import Profile
 
 cred = credentials.Certificate(
     {
@@ -100,7 +99,7 @@ class Notification(models.Model):
 
     def save(self, *args, **kwargs):
         fcmtoken = self.profile.fcmtoken
-        if fcmtoken != None:
+        if fcmtoken is not None:
             message = messaging.Message(
                 notification=messaging.Notification(
                     title=self.title,

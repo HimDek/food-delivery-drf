@@ -18,6 +18,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'api.settings')
 # application = get_asgi_application()
 django_asgi_app = get_asgi_application()
 
-application = ProtocolTypeRouter({
-    "http": django_asgi_app
-})
+application = django_asgi_app
+
+app = application
