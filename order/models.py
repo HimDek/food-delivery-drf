@@ -6,17 +6,19 @@ from user.models import Profile
 
 cred = credentials.Certificate(
     {
-        "type": os.getenv('FIREBASE_ACCOUNT_TYPE'),
-        "project_id": os.getenv('FIREBASE_PROJECT_ID'),
-        "private_key_id": os.getenv('FIREBASE_PRIVATE_KEY_ID'),
-        "private_key": os.getenv('FIREBASE_PRIVATE_KEY'),
-        "client_email": os.getenv('FIREBASE_CLIENT_EMAIL'),
-        "client_id": os.getenv('FIREBASE_CLIENT_ID'),
-        "auth_uri": os.getenv('FIREBASE_AUTH_URI'),
-        "token_uri": os.getenv('FIREBASE_TOKEN_URI'),
-        "auth_provider_x509_cert_url": os.getenv('FIREBASE_AUTH_PROVIDER_X509_CERT_URL'),
-        "client_x509_cert_url": os.getenv('FIREBASE_CLIENT_X509_CERT_URL'),
-        "universe_domain": os.getenv('FIREBASE_UNIVERSE_DOMAIN')
+        "type": os.getenv("FIREBASE_ACCOUNT_TYPE"),
+        "project_id": os.getenv("FIREBASE_PROJECT_ID"),
+        "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
+        "private_key": os.getenv("FIREBASE_PRIVATE_KEY"),
+        "client_email": os.getenv("FIREBASE_CLIENT_EMAIL"),
+        "client_id": os.getenv("FIREBASE_CLIENT_ID"),
+        "auth_uri": os.getenv("FIREBASE_AUTH_URI"),
+        "token_uri": os.getenv("FIREBASE_TOKEN_URI"),
+        "auth_provider_x509_cert_url": os.getenv(
+            "FIREBASE_AUTH_PROVIDER_X509_CERT_URL"
+        ),
+        "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL"),
+        "universe_domain": os.getenv("FIREBASE_UNIVERSE_DOMAIN"),
     }
 )
 initialize_app(cred)
@@ -99,7 +101,7 @@ class Notification(models.Model):
 
     def save(self, *args, **kwargs):
         fcmtoken = self.profile.fcmtoken
-        if fcmtoken is not None:
+        if fcmtoken:
             message = messaging.Message(
                 notification=messaging.Notification(
                     title=self.title,
@@ -108,10 +110,10 @@ class Notification(models.Model):
                 data=self.data,
                 token=self.profile.fcmtoken,
             )
-            asyncio.run(self.sendMessage(message, *args, **kwargs))
+            try:
+                asyncio.run(self.sendMessage(message, *args, **kwargs))
+            except:
+                super(Notification, self).save(*args, **kwargs)
 
     async def sendMessage(self, message, *args, **kwargs):
-        try:
-            messaging.send(message)
-        except:
-            pass
+        messaging.send(message)
