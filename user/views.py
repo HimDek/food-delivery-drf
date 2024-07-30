@@ -42,6 +42,9 @@ class CreateUsers(views.APIView):
         elif User.objects.filter(username=request.POST.get("phone")).exists():
             error = {"detail": "Account with that phone number already exist"}
             return Response(error, status=400)
+        elif User.objects.filter(email=request.POST.get("email")).exists():
+            error = {"detail": "Account with that email already exist"}
+            return Response(error, status=400)
         else:
             phone = Phone.objects.get(number=request.POST.get("phone"))
             email = Email.objects.get(email=request.POST.get("email"))
