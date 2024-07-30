@@ -5,27 +5,28 @@ from .models import Profile, Phone, Email
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    email = serializers.EmailField(required=True)
+    email = serializers.EmailField(required=True, write_only=True)
+    password = serializers.CharField(required=True, write_only=True)
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.fields[self.username_field] = serializers.CharField(required=False, write_only=True)
 
     def validate(self, attrs):
-        email = attrs.get("email")
-        password = attrs.get("password")
+        email = attrs.get('email')
+        password = attrs.get('password')
 
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise serializers.ValidationError("No user found with this email address.")
+            raise serializers.ValidationError('No user found with this email address.')
 
         if not user.check_password(password):
-            raise serializers.ValidationError("Incorrect password.")
+            raise serializers.ValidationError('Incorrect password.')
 
-        data = super().validate({
-            'username': user.username,
-            'password': password
-        })
-
-        return data
-
+        attrs['username'] = user.username
+        return super().validate(attrs)
 
 
 class ProfileBaseSerializer(serializers.ModelSerializer):
