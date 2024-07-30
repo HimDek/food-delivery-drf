@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 from django.utils.html import strip_tags
 from django.template.loader import render_to_string
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import Profile, Phone, Email
 from .serializers import (
     UserSerializer,
@@ -17,6 +18,8 @@ from .serializers import (
 )
 
 # Create your views here.
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 
 class CreateUsers(views.APIView):
