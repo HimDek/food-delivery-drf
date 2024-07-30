@@ -22,7 +22,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         except User.DoesNotExist:
             raise serializers.ValidationError('No user found with this email address.')
 
-        if not user.check_password(password):
+        if not user.check_password(password) or not Email.objects.get(email=email).valid():
             raise serializers.ValidationError('Incorrect password.')
 
         attrs['username'] = user.username
