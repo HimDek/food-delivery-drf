@@ -24,8 +24,14 @@ class CreateUsers(views.APIView):
         if not request.POST.get("phone"):
             error = {"detail": "Phone number is required"}
             return Response(error, status=400)
-        elif not request.POST.get("otp"):
+        elif not request.POST.get("phoneotp"):
             error = {"detail": "Phone OTP is required"}
+            return Response(error, status=400)
+        elif not request.POST.get("email"):
+            error = {"detail": "Email is required"}
+            return Response(error, status=400)
+        elif not request.POST.get("emailotp"):
+            error = {"detail": "Email OTP is required"}
             return Response(error, status=400)
         elif not request.POST.get("first_name"):
             error = {"detail": "First name is required"}
@@ -38,17 +44,22 @@ class CreateUsers(views.APIView):
             return Response(error, status=400)
         else:
             phone = Phone.objects.get(number=request.POST.get("phone"))
-            if not phone.valid() or "{}".format(phone.otp) != request.POST.get("otp"):
+            email = Email.objects.get(email=request.POST.get("email"))
+            if not phone.valid() or "{}".format(phone.otp) != request.POST.get("phoneotp"):
                 error = {"detail": "Invalid phone OTP"}
+                return Response(error, status=400)
+            elif not email.valid() or "{}".format(email.otp) != request.POST.get("emailotp"):
+                error = {"detail": "Invalid email OTP"}
                 return Response(error, status=400)
             else:
                 user = User.objects.create(
+                    email=request.POST.get("email"),
                     username=request.POST.get("phone"),
                     first_name=request.POST.get("first_name"),
                     last_name=request.POST.get("last_name"),
                 )
                 profile = Profile.objects.create(user=user)
-                user.set_password(request.POST.get("otp"))
+                user.set_password(request.POST.get("emailotp"))
                 user.save()
                 profile.save()
 
@@ -94,7 +105,6 @@ class RetrieveUpdateSelfUserProfile(views.APIView):
             phone = Phone.objects.get(phone=request.POST.get("phone"))
             if request.POST.get("otp") == phone.otp and phone.valid():
                 user.username = request.POST.get("phone")
-                profile.verified = True
         if request.POST.get("email") and request.POST.get("emailotp"):
             email = Phone.objects.get(email=request.POST.get("email"))
             if request.POST.get("emailotp") == email.otp and email.valid():
@@ -105,7 +115,7 @@ class RetrieveUpdateSelfUserProfile(views.APIView):
         return Response(ProfileSerializer(profile).data)
 
 
-class GetOTP(views.APIView):
+class GetPhoneOTP(views.APIView):
     def post(self, request):
         phone, created = Phone.objects.update_or_create(
             number=request.POST.get("number"),

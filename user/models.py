@@ -20,7 +20,6 @@ class Profile(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    verified = models.BooleanField(default=False)
     restaurantName = models.CharField(max_length=32, blank=True)
     joinedOn = models.DateField(auto_now_add=True)
     lastActiveOn = models.DateTimeField(auto_now=True)

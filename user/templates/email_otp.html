@@ -1,0 +1,11 @@
+<h2>OTP for Maaco</h2>
+
+<h3 onclick="copy()">
+    {{ otp }}
+</h3>
+
+<script>
+    function copy() {
+        navigator.clipboard.writeText({{ otp }});
+    }
+</script>
