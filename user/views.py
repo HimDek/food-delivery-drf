@@ -113,7 +113,7 @@ class RetrieveUpdateSelfUserProfile(views.APIView):
             if request.POST.get("otp") == phone.otp and phone.valid():
                 user.username = request.POST.get("phone")
         if request.POST.get("email") and request.POST.get("emailotp"):
-            email = Phone.objects.get(email=request.POST.get("email"))
+            email = Email.objects.get(email=request.POST.get("email"))
             if request.POST.get("emailotp") == email.otp and email.valid():
                 user.email = request.POST.get("email")
 
